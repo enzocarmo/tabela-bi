@@ -1,0 +1,16 @@
+{
+  "name": "tabela-bi",
+  "version": "0.0.1",
+  "scripts": {
+    "build": "weweb build",
+    "serve": "weweb serve"
+  },
+  "devDependencies": {
+    "@weweb/cli": "latest"
+  },
+  "dependencies": {
+    "@phosphor-icons/vue": "^2.2.1",
+    "ag-grid-enterprise": "^32.0.2",
+    "ag-grid-vue3": "^32.0.1"
+  }
+}
