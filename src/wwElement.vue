@@ -50,7 +50,7 @@ export default {
     ];
 
     const colDefs = ref([ // Colunas da tabela
-      { headerName: "Teste", field: "make", rowDrag: true },
+      { headerName: "Teste", field: "make" },
       { field: "model" },
       { field: "price", valueFormatter: formatCurrency },
       { field: "price2", valueFormatter: formatCurrency, cellRenderer: comparisonRenderer },
