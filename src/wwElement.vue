@@ -1,56 +1,40 @@
 <template>
   <ag-grid-vue ref="agGrid" :rowData="processedRowData" :columnDefs="colDefs" domLayout="normal" class="ag-theme-quartz"
-    @grid-ready="onGridReady" :rowDragManaged="true" @row-double-clicked="onRowDoubleClicked"
-    :pinnedBottomRowData="pinnedBottomRowData" style="height: 75vh;">
-  </ag-grid-vue>
+    @grid-ready="onGridReady" :rowDragManaged="true" @row-double-clicked="onRowDoubleClicked" :loading="content.overlay"
+    :overlayLoadingTemplate="loading" :pinnedBottomRowData="pinnedBottomRowData" @sort-changed="onSortChanged"
+    @body-scroll="onBodyScroll" style="height: 78.5vh;"></ag-grid-vue>
 </template>
 
 <script>
+import { AgGridVue } from "ag-grid-vue3";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
-import { AgGridVue } from "ag-grid-vue3";
 import { ref, computed } from "vue";
 
 import Minus from "../src/assets/minus.svg";
 import TrendDown from "../src/assets/trend-down-fill.svg";
 import TrendUp from "../src/assets/trend-up-fill.svg";
 
+
 export default {
   components: {
-    AgGridVue
+    AgGridVue,
   },
   props: {
     content: { type: Object, required: true },
     uid: { type: String, required: true },
   },
-
   setup(props, { emit }) {
-    const agGrid = ref(null);
-    const rowData = ref([ // Dados da tabela
+    const gridApi = ref(null);
+    const gridColumnApi = ref(null);
+    const rowData = ref([ // Exemplo de dados
       { make: "Tesla3", model: "Model Y", price: 64950, price2: 65000, quantidade: 15, quantidade2: 16, markup: 3.12, hierarquia: "Teste" },
-      { make: "Tesla", model: "Model Y", price: 64950, price2: 65000, quantidade: 15, quantidade2: 13, markup: 3.12, hierarquia: "Teste" },
-      { make: "Tesla", model: "Model Y", price: 64950, price2: 65000, quantidade: 15, quantidade2: 111, markup: 3.12, hierarquia: "Teste" },
-      { make: "Tesla", model: "Model Y", price: 64950, price2: 65000, quantidade: 15, quantidade2: 1, markup: 3.12, hierarquia: "Teste" },
-      { make: "Tesla", model: "Model Y", price: 64950, price2: 65000, quantidade: 15, quantidade2: 3, markup: 3.12, hierarquia: "Teste" },
-      { make: "Tesla", model: "Model Y", price: 64950, price2: 65000, quantidade: 15, quantidade2: 15, markup: 3.12, hierarquia: "Teste" },
+      { make: "Tesla3", model: "Model Y", price: 64950, price2: 65000, quantidade: 15, quantidade2: 16, markup: 3.12, hierarquia: "Teste" },
+      { make: "Tesla3", model: "Model Y", price: 64950, price2: 65000, quantidade: 15, quantidade2: 16, markup: 3.12, hierarquia: "Teste" },
     ]);
 
-    const totalConfig = [
-      { col: 'price', type: 'sum' },
-      { col: 'price2', type: 'sum' },
-      { col: 'quantidade', type: 'sum' },
-      { col: 'quantidade2', type: 'sum' },
-      {
-        col: 'markup', type: 'custom', formula: (data) => {
-          const totalPrice = data.reduce((acc, row) => acc + row.price, 0);
-          const totalPrice2 = data.reduce((acc, row) => acc + row.price2, 0);
-          return ((totalPrice2 - totalPrice) / totalPrice * 100).toFixed(2);
-        }
-      }
-    ];
-
-    const colDefs = ref([ // Colunas da tabela
-      { headerName: "Teste", field: "make" },
+    const colDefs = ref([ // Definições das colunas
+      { field: "make", pinned: "left" },
       { field: "model" },
       { field: "price", valueFormatter: formatCurrency },
       { field: "price2", valueFormatter: formatCurrency, cellRenderer: comparisonRenderer },
@@ -58,6 +42,55 @@ export default {
       { field: "quantidade" },
       { field: "quantidade2", cellRenderer: comparisonRenderer },
     ]);
+
+    const processedRowData = computed(() => rowData.value);
+
+    const pinnedBottomRowData = computed(() => {
+      const totalRow = calculateTotals(rowData.value, [
+        { col: 'price', type: 'sum' },
+        { col: 'price2', type: 'sum' },
+      ]);
+      return [{ ...totalRow, Categoria: 'Total' }];
+    });
+
+    const { value: variableResult, setValue: setValue1 } = wwLib.wwVariable.useComponentVariable({
+      uid: props.uid,
+      name: 'Relatorio',
+      type: 'object',
+      defaultValue: ''
+    });
+
+    const { value: variableResult2, setValue: setValue2 } = wwLib.wwVariable.useComponentVariable({
+      uid: props.uid,
+      name: 'Ordem',
+      type: 'object',
+    });
+
+    const { value: variableResult3, setValue: setValue3 } = wwLib.wwVariable.useComponentVariable({
+      uid: props.uid,
+      name: 'Teste',
+      type: 'number',
+    });
+
+    function onGridReady(params) {
+      gridApi.value = params.api;
+      gridColumnApi.value = params.columnApi;
+      const columnKeys = colDefs.value.map(colDef => colDef.field);
+      params.api.autoSizeColumns(columnKeys);
+    }
+
+    function onSortChanged(event) {
+      // Assume que a última coluna clicada é a última no array
+      const lastClickedColumn = event.columns[event.columns.length - 1];
+      emit('trigger-event', { name: 'Ordem', event: { value: lastClickedColumn } });
+      setValue2(lastClickedColumn); // Atualiza para apenas a última coluna clicada
+    }
+
+    function onRowDoubleClicked(event) {
+      const rowData = event.data;
+      emit('trigger-event', { name: 'LinhaDoisClick', event: { value: rowData } });
+      setValue1(rowData)
+    }
 
     function formatCurrency(params) {
       return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(params.value);
@@ -67,16 +100,15 @@ export default {
       return Number(params.value / 100).toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 2 });
     }
 
-    function comparisonRenderer(params) {
-      const data = params.data;
 
-      const comparisonConfig = [ // Colunas de comparacao
+    function comparisonRenderer(params) {
+      let icon = Minus;
+      let cellClass = 'cell-nulo';
+      const data = params.data;
+      const comparisonConfig = [
         { firstCol: 'price', secondCol: 'price2' },
         { firstCol: 'quantidade', secondCol: 'quantidade2' }
       ];
-
-      let icon = Minus;
-      let cellClass = 'cell-nulo';
 
       comparisonConfig.forEach(config => {
         if (params.colDef.field === config.secondCol) {
@@ -90,10 +122,9 @@ export default {
         }
       });
 
-      const cellValue = params.valueFormatted || params.value;
       const span = document.createElement('span');
       span.className = cellClass;
-      span.textContent = cellValue + ' ';
+      span.textContent = params.valueFormatted || params.value;
 
       const iconElement = document.createElement('img');
       iconElement.src = icon;
@@ -103,66 +134,131 @@ export default {
       const cellDiv = document.createElement('div');
       cellDiv.appendChild(span);
       cellDiv.appendChild(iconElement);
-
       return cellDiv;
     }
 
     function calculateTotals(data, config) {
-      const totals = {};
-      config.forEach(({ col, type, formula }) => {
-        if (type === 'sum') {
-          totals[col] = data.reduce((acc, row) => acc + row[col], 0);
-        } else if (type === 'custom' && formula) {
-          totals[col] = formula(data);
-        }
-      });
-      return totals;
+      return config.reduce((acc, { col, type }) => {
+        acc[col] = data.reduce((total, item) => total + item[col], 0);
+        return acc;
+      }, {});
     }
 
-    const processedRowData = computed(() => {
-      return rowData.value;
-    });
+    function onBodyScroll(event) {
+      const linhas = gridApi.value.getDisplayedRowCount();
+      const scrollTop = event.top;
+      const scrollHeight = 600;
+      const clientHeight = (linhas * 50);
+      const percentScroll = Math.abs((scrollTop / (scrollHeight - clientHeight)) * 100);
 
-    const pinnedBottomRowData = computed(() => {
-      const totalRow = calculateTotals(rowData.value, totalConfig);
-      return [{ ...totalRow, make: 'Total' }];
-    });
-
-    function onGridReady(params) {
-      const columnKeys = colDefs.value.map(colDef => colDef.field);
-      params.api.autoSizeColumns(columnKeys);
+      if (percentScroll > 85) {
+        emit('trigger-event', { name: 'Scroll', event: { value: "" } });
+      }
     }
 
-    const { value: variableResult, setValue } = wwLib.wwVariable.useComponentVariable({
-      uid: props.uid,
-      name: 'Relatorio',
-      type: 'object',
-      defaultValue: ''
-    });
-
-    function onRowDoubleClicked(event) {
-      const rowData = event.data;
-      emit('trigger-event', { name: 'LinhaClicada2Vezes', event: { value: rowData } });
-      setValue(rowData);
-    }
-
-
+    const loading = `<div class="ag-custom-loading-overlay"><div class="loader"></div> <span>Carregando...</span></div>`
 
     return {
-      variableResult,
-      setValue,
       processedRowData,
       pinnedBottomRowData,
       colDefs,
       onGridReady,
       onRowDoubleClicked,
-      agGrid
+      onSortChanged,
+      variableResult,
+      variableResult2,
+      setValue1,
+      setValue2,
+      loading,
+      onBodyScroll,
+      setValue3,
+      variableResult3
     };
   }
 };
 </script>
 
 <style>
+.ag-custom-loading-overlay {
+  display: flex;
+  flex-direction: column;
+  /* Define a orientação vertical dos itens */
+  row-gap: 24px;
+  /* Espaçamento de 24px entre cada linha */
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  background-color: #f6eeff65;
+  color: #000;
+  font-size: 16px;
+}
+
+.ag-custom-loading-overlay span {
+  font-family: 'Montserrat';
+  font-weight: 500;
+  font-size: 16px;
+  color: #6418C3;
+}
+
+.loader {
+  width: 50px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 6px solid #6418C3;
+  animation:
+    l20-1 0.8s infinite linear alternate,
+    l20-2 1.6s infinite linear;
+}
+
+@keyframes l20-1 {
+  0% {
+    clip-path: polygon(50% 50%, 0 0, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%)
+  }
+
+  12.5% {
+    clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 0%, 100% 0%, 100% 0%)
+  }
+
+  25% {
+    clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 100% 100%, 100% 100%)
+  }
+
+  50% {
+    clip-path: polygon(50% 50%, 0 0, 50% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%)
+  }
+
+  62.5% {
+    clip-path: polygon(50% 50%, 100% 0, 100% 0%, 100% 0%, 100% 100%, 50% 100%, 0% 100%)
+  }
+
+  75% {
+    clip-path: polygon(50% 50%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 50% 100%, 0% 100%)
+  }
+
+  100% {
+    clip-path: polygon(50% 50%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 50% 100%, 0% 100%)
+  }
+}
+
+@keyframes l20-2 {
+  0% {
+    transform: scaleY(1) rotate(0deg)
+  }
+
+  49.99% {
+    transform: scaleY(1) rotate(135deg)
+  }
+
+  50% {
+    transform: scaleY(-1) rotate(0deg)
+  }
+
+  100% {
+    transform: scaleY(-1) rotate(-135deg)
+  }
+}
+
 .ag-row-hover .ag-cell {
   border: none;
   /* Remove a borda de cada célula */
