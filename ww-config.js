@@ -12,7 +12,7 @@ export default {
       type: "Array",
       bindable: true,
       section: "settings",
-      defaultValue: []
+      defaultValue: [{ make: "Tesla3", model: "Model Y", price: 64950, price2: 65000, quantidade: 15, quantidade2: 16, markup: 3.12, hierarquia: "Teste" }]
     },
     colunas: {
       label: {
@@ -21,7 +21,15 @@ export default {
       type: "Array",
       bindable: true,
       section: "settings",
-      defaultValue: []
+      defaultValue: [
+        { field: "make", pinned: "left" },
+        { field: "model" },
+        { field: "price", valueFormatter: "formatCurrency" },
+        { field: "price2", valueFormatter: "formatCurrency", cellRenderer: "comparisonRenderer" },
+        { field: "markup", valueFormatter: "formatPercentage" },
+        { field: "quantidade" },
+        { field: "quantidade2", cellRenderer: "comparisonRenderer" },
+      ]
     },
     total: {
       label: {
