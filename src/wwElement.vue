@@ -36,35 +36,19 @@ export default {
     uid: { type: String, required: true },
   },
   setup(props, { emit }) {
-    // Constants
     const gridApi = ref(null);
     const gridColumnApi = ref(null);
     const rowData = ref([]);
     const colDefs = ref([]);
+    const totalConfig = ref([]);
+    const comparisonConfig = ref([]);
     const loading = `<div class="ag-custom-loading-overlay"><div class="loader"></div> <span>Carregando...</span></div>`;
-    
-    const totalConfig = [
-      { col: "price", type: "sum" },
-      { col: "price2", type: "sum" },
-      { col: "quantidade", type: "sum" },
-      { col: "quantidade2", type: "sum" },
-      {
-        col: "markup",
-        type: "custom",
-        formula: (data) => {
-          const totalPrice = data.reduce((acc, row) => acc + row.price, 0);
-          const totalPrice2 = data.reduce((acc, row) => acc + row.price2, 0);
-          return (((totalPrice2 - totalPrice) / totalPrice) * 100).toFixed(2);
-        },
-      },
-    ];
 
     const pinnedBottomRowData = computed(() => {
-      const totalRow = calculateTotals(rowData.value, totalConfig);
-      return [{ ...totalRow, make: 'Total' }];
+      const totals = calculateTotals(rowData.value, totalConfig.value);
+      return [{ ...totals, [props.content.primeiracoluna]: "Total" }];
     });
 
-    // Variable Use
     const { value: variableResult, setValue: setValue1 } =
       wwLib.wwVariable.useComponentVariable({
         uid: props.uid,
@@ -80,9 +64,8 @@ export default {
         type: "object",
       });
 
-    // Functions
     function calculateTotals(data, config) {
-      return config.reduce((acc, { col, type }) => {
+      return config.reduce((acc, { col }) => {
         acc[col] = data.reduce((total, item) => total + item[col], 0);
         return acc;
       }, {});
@@ -96,13 +79,19 @@ export default {
 
     function onSortChanged(event) {
       const lastClickedColumn = event.columns[event.columns.length - 1];
-      emit("trigger-event", { name: "Ordem", event: { value: lastClickedColumn } });
+      emit("trigger-event", {
+        name: "Ordem",
+        event: { value: lastClickedColumn },
+      });
       setValue2(lastClickedColumn);
     }
 
     function onRowDoubleClicked(event) {
       const rowData = event.data;
-      emit("trigger-event", { name: "LinhaDoisClick", event: { value: rowData } });
+      emit("trigger-event", {
+        name: "LinhaDoisClick",
+        event: { value: rowData },
+      });
       setValue1(rowData);
     }
 
@@ -126,7 +115,6 @@ export default {
       }
     }
 
-    // Column Formatting
     function transformColumns(columnDefinitions) {
       const functionMap = {
         formatCurrency,
@@ -135,8 +123,12 @@ export default {
       };
       return columnDefinitions.map((col) => ({
         ...col,
-        ...(col.valueFormatter && { valueFormatter: functionMap[col.valueFormatter] }),
-        ...(col.cellRenderer && { cellRenderer: functionMap[col.cellRenderer] }),
+        ...(col.valueFormatter && {
+          valueFormatter: functionMap[col.valueFormatter],
+        }),
+        ...(col.cellRenderer && {
+          cellRenderer: functionMap[col.cellRenderer],
+        }),
       }));
     }
 
@@ -158,12 +150,8 @@ export default {
       let icon = Minus;
       let cellClass = "cell-nulo";
       const data = params.data;
-      const comparisonConfig = [
-        { firstCol: "price", secondCol: "price2" },
-        { firstCol: "quantidade", secondCol: "quantidade2" },
-      ];
 
-      comparisonConfig.forEach((config) => {
+      comparisonConfig.value.forEach((config) => {
         if (params.colDef.field === config.secondCol) {
           if (data[config.secondCol] > data[config.firstCol]) {
             icon = TrendUp;
@@ -190,20 +178,66 @@ export default {
       return cellDiv;
     }
 
-    // Watchers
-    watch(() => props.content.dados, (newData) => {
-      if (newData) {
-        rowData.value = [...newData]; // spread operator to trigger reactivity
-        autoSizeAllColumns();
-      }
-    }, { immediate: true, deep: true });
+    function transformTotal(totalDefinitions) {
+      return totalDefinitions.map((item) => {
+        if (item.hasOwnProperty("formula")) {
+          item.formla = eval(item.formula);
+        }
+        return item;
+      });
+    }
 
-    watch(() => props.content.colunas, (newColDefs) => {
-      if (newColDefs) {
-        colDefs.value = transformColumns(newColDefs);
+    watch(
+      () => props.content.dados,
+      (newData) => {
+        if (newData) {
+          rowData.value = [...newData];
+          autoSizeAllColumns();
+        }
+      },
+      { immediate: true, deep: true }
+    );
+
+    watch(
+      () => props.content.colunas,
+      (newColDefs) => {
+        if (newColDefs) {
+          colDefs.value = transformColumns(newColDefs);
+          autoSizeAllColumns();
+        }
+      },
+      { immediate: true, deep: true }
+    );
+
+    watch(
+      () => props.content.total,
+      (newTotal) => {
+        if (newTotal) {
+          totalConfig.value = transformTotal(newTotal);
+          autoSizeAllColumns();
+        }
+      },
+      { immediate: true, deep: true }
+    );
+
+    watch(
+      () => props.content.comparativo,
+      (newComparisonConfig) => {
+        if (newComparisonConfig) {
+          comparisonConfig.value = [...newComparisonConfig];
+          autoSizeAllColumns();
+        }
+      },
+      { immediate: true, deep: true }
+    );
+
+    watch(
+      () => props.content.primeiracoluna,
+      () => {
         autoSizeAllColumns();
-      }
-    }, { immediate: true, deep: true });
+      },
+      { immediate: true, deep: true }
+    );
 
     return {
       pinnedBottomRowData,
@@ -218,6 +252,7 @@ export default {
       loading,
       onBodyScroll,
       rowData,
+      comparisonConfig,
     };
   },
 };

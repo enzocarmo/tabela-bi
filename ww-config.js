@@ -38,7 +38,17 @@ export default {
       type: "Array",
       bindable: true,
       section: "settings",
-      defaultValue: []
+      defaultValue: [
+        { col: "price", type: "sum" },
+        { col: "price2", type: "sum" },
+        { col: "quantidade", type: "sum" },
+        { col: "quantidade2", type: "sum" },
+        {
+          col: "markup",
+          type: "custom",
+          formula: "(data) => {const totalPrice = data.reduce((acc, row) => acc + row.price, 0);const totalPrice2 = data.reduce((acc, row) => acc + row.price2, 0);return (((totalPrice2 - totalPrice) / totalPrice) * 100).toFixed(2);}"
+        },
+      ]
     },
     comparativo: {
       label: {
@@ -47,7 +57,19 @@ export default {
       type: "Array",
       bindable: true,
       section: "settings",
-      defaultValue: []
+      defaultValue: [
+        { firstCol: "price", secondCol: "price2" },
+        { firstCol: "quantidade", secondCol: "quantidade2" },
+      ]
+    },
+    primeiracoluna: {
+      label: {
+        en: "Primeira Coluna"
+      },
+      type: "Text",
+      bindable: true,
+      section: "settings",
+      defaultValue: "make"
     },
     overlay: {
       label: {
