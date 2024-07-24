@@ -22,7 +22,7 @@ export default {
       bindable: true,
       section: "settings",
       defaultValue: [
-        { field: "make", pinned: "left" },
+        { field: "make", pinned: "left", checkboxSelection: true },
         { field: "model" },
         { field: "price", valueFormatter: "formatCurrency" },
         { field: "price2", valueFormatter: "formatCurrency", cellRenderer: "comparisonRenderer" },
@@ -78,11 +78,21 @@ export default {
       type: "Boolean",
       bindable: true,
       section: "settings"
+    },
+    selecionar: {
+      label: {
+        en: "Selecionar"
+      },
+      type: "Boolean",
+      bindable: true,
+      section: "settings",
+      defaultValue: false
     }
   },
   triggerEvents: [
     { name: 'LinhaDoisClick', label: { en: 'Linha Double Click' }, event: { value: '' } },
     { name: 'Ordem', label: { en: 'Order' }, event: { value: '' } },
     { name: 'Scroll', label: { en: 'Scroll' }, event: { value: '' } },
+    { name: 'Selecionado', label: { en: 'Selecionado' }, event: { value: '' } },
   ],
 };
