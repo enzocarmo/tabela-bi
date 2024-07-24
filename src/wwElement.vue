@@ -33,10 +33,7 @@ export default {
     const loading = `<div class="ag-custom-loading-overlay"><div class="loader"></div> <span>Carregando...</span></div>`;
     const rowSelectionType = ref(props.content.selecionar ? 'multiple' : 'none');
 
-    const pinnedBottomRowData = computed(() => {
-      const totals = calculateTotals(rowData.value, totalConfig.value);
-      return [{ ...totals, [props.content.primeiracoluna]: "Total" }];
-    });
+    const pinnedBottomRowData = ref([]);
 
     const { value: variableResult, setValue: setValue1 } =
       wwLib.wwVariable.useComponentVariable({
@@ -59,13 +56,6 @@ export default {
         name: "Valor Selecionado",
         type: "array",
       });
-
-    function calculateTotals(data, config) {
-      return config.reduce((acc, { col }) => {
-        acc[col] = data.reduce((total, item) => total + item[col], 0);
-        return acc;
-      }, {});
-    }
 
     function onGridReady(params) {
       gridApi.value = params.api;
@@ -199,7 +189,14 @@ export default {
       () => props.content.dados,
       (newData) => {
         if (newData) {
-          rowData.value = [...newData];
+          const totalRow = newData.find(row => row[props.content.primeiracoluna] === "Total");
+          if (totalRow) {
+            pinnedBottomRowData.value = [totalRow];
+            rowData.value = newData.filter(row => row[props.content.primeiracoluna] !== "Total");
+          } else if (!pinnedBottomRowData.value.length) {
+            pinnedBottomRowData.value = [];
+            rowData.value = [...newData];
+          }
           autoSizeAllColumns();
         }
       },
