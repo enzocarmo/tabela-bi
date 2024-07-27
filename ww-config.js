@@ -31,25 +31,6 @@ export default {
         { field: "quantidade2", cellRenderer: "comparisonRenderer" },
       ]
     },
-    total: {
-      label: {
-        en: "Total"
-      },
-      type: "Array",
-      bindable: true,
-      section: "settings",
-      defaultValue: [
-        { col: "price", type: "sum" },
-        { col: "price2", type: "sum" },
-        { col: "quantidade", type: "sum" },
-        { col: "quantidade2", type: "sum" },
-        {
-          col: "markup",
-          type: "custom",
-          formula: "(data) => {const totalPrice = data.reduce((acc, row) => acc + row.price, 0);const totalPrice2 = data.reduce((acc, row) => acc + row.price2, 0);return (((totalPrice2 - totalPrice) / totalPrice) * 100).toFixed(2);}"
-        },
-      ]
-    },
     comparativo: {
       label: {
         en: "Comparativo"
@@ -82,6 +63,15 @@ export default {
     selecionar: {
       label: {
         en: "Selecionar"
+      },
+      type: "Boolean",
+      bindable: true,
+      section: "settings",
+      defaultValue: false
+    },
+    largura: {
+      label: {
+        en: "Largura da coluna"
       },
       type: "Boolean",
       bindable: true,
