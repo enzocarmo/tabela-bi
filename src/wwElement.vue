@@ -28,11 +28,9 @@ export default {
     const gridColumnApi = ref(null);
     const rowData = ref([]);
     const colDefs = ref([]);
-    const totalConfig = ref([]);
     const comparisonConfig = ref([]);
     const loading = `<div class="ag-custom-loading-overlay"><div class="loader"></div> <span>Carregando...</span></div>`;
     const rowSelectionType = ref(props.content.selecionar ? 'multiple' : 'none');
-
     const pinnedBottomRowData = ref([]);
 
     const { value: variableResult, setValue: setValue1 } =
@@ -60,7 +58,6 @@ export default {
     function onGridReady(params) {
       gridApi.value = params.api;
       gridColumnApi.value = params.columnApi;
-      autoSizeAllColumns();
     }
 
     function onSortChanged(event) {
@@ -176,15 +173,6 @@ export default {
       return cellDiv;
     }
 
-    function transformTotal(totalDefinitions) {
-      return totalDefinitions.map((item) => {
-        if (item.hasOwnProperty("formula")) {
-          item.formla = eval(item.formula);
-        }
-        return item;
-      });
-    }
-
     watch(
       () => props.content.dados,
       (newData) => {
@@ -197,7 +185,6 @@ export default {
             pinnedBottomRowData.value = [];
             rowData.value = [...newData];
           }
-          autoSizeAllColumns();
         }
       },
       { immediate: true, deep: true }
@@ -208,18 +195,6 @@ export default {
       (newColDefs) => {
         if (newColDefs) {
           colDefs.value = transformColumns(newColDefs);
-          autoSizeAllColumns();
-        }
-      },
-      { immediate: true, deep: true }
-    );
-
-    watch(
-      () => props.content.total,
-      (newTotal) => {
-        if (newTotal) {
-          totalConfig.value = transformTotal(newTotal);
-          autoSizeAllColumns();
         }
       },
       { immediate: true, deep: true }
@@ -230,7 +205,6 @@ export default {
       (newComparisonConfig) => {
         if (newComparisonConfig) {
           comparisonConfig.value = [...newComparisonConfig];
-          autoSizeAllColumns();
         }
       },
       { immediate: true, deep: true }
@@ -238,9 +212,7 @@ export default {
 
     watch(
       () => props.content.primeiracoluna,
-      () => {
-        autoSizeAllColumns();
-      },
+      () => {},
       { immediate: true, deep: true }
     );
 
@@ -250,6 +222,15 @@ export default {
         rowSelectionType.value = newSelection ? 'multiple' : 'none';
       },
       { immediate: true }
+    );
+
+    watch(
+      () => props.content.largura,
+      (newLargura) => {
+        if (newLargura) {
+          autoSizeAllColumns();
+        }
+      }
     );
 
     return {
