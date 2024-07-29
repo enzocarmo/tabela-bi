@@ -258,7 +258,10 @@ export default {
     watch(
       () => props.content.search,
       (newSearch) => {
-        gridApi.value.setQuickFilter(newSearch);
+        gridApi.value.setGridOption(
+        "quickFilterText",
+        newSearch,
+      );
       }
     );
 
