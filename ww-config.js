@@ -77,6 +77,14 @@ export default {
       bindable: true,
       section: "settings",
       defaultValue: false
+    },
+    search: {
+      label: {
+        en: "Pesquisa"
+      },
+      type: "Text",
+      bindable: true,
+      section: "settings"
     }
   },
   triggerEvents: [

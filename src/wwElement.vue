@@ -216,6 +216,7 @@ export default {
       (newColDefs) => {
         if (newColDefs) {
           colDefs.value = transformColumns(newColDefs);
+          updateFilteredSortedData();
         }
       },
       { immediate: true, deep: true }
@@ -251,6 +252,13 @@ export default {
         if (newLargura) {
           autoSizeAllColumns();
         }
+      }
+    );
+
+    watch(
+      () => props.content.search,
+      (newSearch) => {
+        gridApi.value.setQuickFilter(newSearch);
       }
     );
 
