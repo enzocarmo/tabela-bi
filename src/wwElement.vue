@@ -2,14 +2,15 @@
   <ag-grid-vue ref="agGrid" :rowData="rowData" :columnDefs="colDefs" domLayout="normal" class="ag-theme-quartz"
     @grid-ready="onGridReady" :rowDragManaged="true" @row-double-clicked="onRowDoubleClicked" :loading="content.overlay"
     :overlayLoadingTemplate="loading" :pinnedBottomRowData="pinnedBottomRowData" @sort-changed="onSortChanged"
-    @body-scroll="onBodyScroll" @selection-changed="onSelectionChanged" :rowSelection="rowSelectionType" style="height: 78.5vh"></ag-grid-vue>
+    @body-scroll="onBodyScroll" @selection-changed="onSelectionChanged" :rowSelection="rowSelectionType"
+    style="height: 78.5vh"></ag-grid-vue>
 </template>
 
 <script>
 import { AgGridVue } from "ag-grid-vue3";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-quartz.css";
-import { ref, computed, watch } from "vue";
+import { ref, watch } from "vue";
 
 import Minus from "../src/assets/minus.svg";
 import TrendDown from "../src/assets/trend-down-fill.svg";
@@ -55,9 +56,17 @@ export default {
         type: "array",
       });
 
+    const { value: variableResult4, setValue: setValue4 } =
+      wwLib.wwVariable.useComponentVariable({
+        uid: props.uid,
+        name: "Dados da Tabela",
+        type: "array",
+      });
+
     function onGridReady(params) {
       gridApi.value = params.api;
       gridColumnApi.value = params.columnApi;
+      updateFilteredSortedData();
     }
 
     function onSortChanged(event) {
@@ -67,6 +76,7 @@ export default {
         event: { value: lastClickedColumn },
       });
       setValue2(lastClickedColumn);
+      updateFilteredSortedData();
     }
 
     function onRowDoubleClicked(event) {
@@ -173,6 +183,16 @@ export default {
       return cellDiv;
     }
 
+    function updateFilteredSortedData() {
+      if (gridApi.value) {
+        const filteredSortedData = [];
+        gridApi.value.forEachNodeAfterFilterAndSort(node => {
+          filteredSortedData.push(node.data);
+        });
+        setValue4(filteredSortedData);
+      }
+    }
+
     watch(
       () => props.content.dados,
       (newData) => {
@@ -185,6 +205,7 @@ export default {
             pinnedBottomRowData.value = [];
             rowData.value = [...newData];
           }
+          updateFilteredSortedData();
         }
       },
       { immediate: true, deep: true }
@@ -212,7 +233,7 @@ export default {
 
     watch(
       () => props.content.primeiracoluna,
-      () => {},
+      () => { },
       { immediate: true, deep: true }
     );
 
@@ -242,15 +263,18 @@ export default {
       variableResult,
       variableResult2,
       variableResult3,
+      variableResult4,
       setValue1,
       setValue2,
       setValue3,
+      setValue4,
       loading,
       onBodyScroll,
       onSelectionChanged,
       rowData,
       comparisonConfig,
       rowSelectionType,
+      updateFilteredSortedData,
     };
   },
 };
