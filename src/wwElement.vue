@@ -62,13 +62,7 @@ export default {
         name: "Dados da Tabela",
         type: "array",
       });
-
-    const clearSort = () => {
-      gridApi.value.applyColumnState({
-        defaultState: { sort: null },
-      });
-    };
-
+    
     function onGridReady(params) {
       gridApi.value = params.api;
       gridColumnApi.value = params.columnApi;
@@ -198,6 +192,14 @@ export default {
         setValue4(filteredSortedData);
       }
     }
+
+    const clearSort = () => {
+      if (gridApi.value) {
+        gridApi.value.applyColumnState({
+          defaultState: { sort: null },
+        });
+      }
+    };
 
     watch(
       () => props.content.dados,
