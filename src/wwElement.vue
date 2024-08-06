@@ -192,15 +192,7 @@ export default {
         setValue4(filteredSortedData);
       }
     }
-
-    const clearSort = () => {
-      if (gridApi.value) {
-        gridApi.value.applyColumnState({
-          defaultState: { sort: null },
-        });
-      }
-    };
-
+    
     watch(
       () => props.content.dados,
       (newData) => {
@@ -214,7 +206,6 @@ export default {
             rowData.value = [...newData];
           }
           updateFilteredSortedData();
-          clearSort();
         }
       },
       { immediate: true, deep: true }
@@ -226,7 +217,6 @@ export default {
         if (newColDefs) {
           colDefs.value = transformColumns(newColDefs);
           updateFilteredSortedData();
-          clearSort();
         }
       },
       { immediate: true, deep: true }
