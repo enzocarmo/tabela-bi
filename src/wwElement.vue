@@ -63,6 +63,12 @@ export default {
         type: "array",
       });
 
+    const clearSort = () => {
+      gridApi.value.applyColumnState({
+        defaultState: { sort: null },
+      });
+    };
+
     function onGridReady(params) {
       gridApi.value = params.api;
       gridColumnApi.value = params.columnApi;
@@ -206,6 +212,7 @@ export default {
             rowData.value = [...newData];
           }
           updateFilteredSortedData();
+          clearSort();
         }
       },
       { immediate: true, deep: true }
@@ -217,6 +224,7 @@ export default {
         if (newColDefs) {
           colDefs.value = transformColumns(newColDefs);
           updateFilteredSortedData();
+          clearSort();
         }
       },
       { immediate: true, deep: true }
