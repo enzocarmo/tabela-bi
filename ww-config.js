@@ -85,6 +85,14 @@ export default {
       type: "Text",
       bindable: true,
       section: "settings"
+    },
+    altura: {
+      label: {
+        en: "Altura"
+      },
+      type: "Text",
+      bindable: true,
+      section: "settings"
     }
   },
   triggerEvents: [
