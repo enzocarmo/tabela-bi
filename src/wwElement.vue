@@ -3,7 +3,7 @@
     @grid-ready="onGridReady" :rowDragManaged="true" @row-double-clicked="onRowDoubleClicked" :loading="content.overlay"
     :overlayLoadingTemplate="loading" :pinnedBottomRowData="pinnedBottomRowData" @sort-changed="onSortChanged"
     @body-scroll="onBodyScroll" @selection-changed="onSelectionChanged" :rowSelection="rowSelectionType"
-    style="height: 78.5vh"></ag-grid-vue>
+    :style="content.altura"></ag-grid-vue>
 </template>
 
 <script>
