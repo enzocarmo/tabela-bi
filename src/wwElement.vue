@@ -103,6 +103,13 @@ export default {
       updateVariableResult4(); // Atualiza a variável quando a ordenação muda
     }
 
+    function applySortAndUpdateVariable() {
+      if (gridApi.value) {
+        gridApi.value.onSortChanged();
+        updateVariableResult4(); // Atualiza a variável com os dados ordenados e filtrados
+      }
+    }
+
     function autoSizeAllColumns() {
       if (gridApi.value) {
         gridApi.value.autoSizeAllColumns();
@@ -197,7 +204,7 @@ export default {
             pinnedBottomRowData.value = [];
             rowData.value = [...newData];
           }
-          updateVariableResult4(); // Atualiza a variável sempre que os dados mudarem
+          applySortAndUpdateVariable(); // Reaplica a ordenação e atualiza a variável sempre que os dados mudarem
         }
       },
       { immediate: true, deep: true }
@@ -273,6 +280,7 @@ export default {
       onBodyScroll,
       onSelectionChanged,
       onSortChanged,
+      applySortAndUpdateVariable,
       rowData,
       comparisonConfig,
       rowSelectionType
