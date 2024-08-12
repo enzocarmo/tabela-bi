@@ -1,7 +1,7 @@
 <template>
   <ag-grid-vue ref="agGrid" :rowData="rowData" :columnDefs="colDefs" domLayout="normal" class="ag-theme-quartz"
     @grid-ready="onGridReady" :rowDragManaged="true" @row-double-clicked="onRowDoubleClicked" :loading="content.overlay"
-    :overlayLoadingTemplate="loading" :pinnedBottomRowData="pinnedBottomRowData" @sort-changed="onSortChanged"
+    :overlayLoadingTemplate="loading" :pinnedBottomRowData="pinnedBottomRowData"
     @body-scroll="onBodyScroll" @selection-changed="onSelectionChanged" :rowSelection="rowSelectionType"
     :style="content.altura"></ag-grid-vue>
 </template>
@@ -66,16 +66,6 @@ export default {
     function onGridReady(params) {
       gridApi.value = params.api;
       gridColumnApi.value = params.columnApi;
-      updateFilteredSortedData();
-    }
-
-    function onSortChanged(event) {
-      const lastClickedColumn = event.columns[event.columns.length - 1];
-      emit("trigger-event", {
-        name: "Ordem",
-        event: { value: lastClickedColumn },
-      });
-      setValue2(lastClickedColumn);
       updateFilteredSortedData();
     }
 
@@ -270,7 +260,6 @@ export default {
       colDefs,
       onGridReady,
       onRowDoubleClicked,
-      onSortChanged,
       variableResult,
       variableResult2,
       variableResult3,
