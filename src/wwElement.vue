@@ -191,6 +191,15 @@ export default {
       });
       setValue4(allRowData);
     }
+
+    watch(
+      () => props.content.atualizardados,
+      (newValue) => {
+        if (newValue) {
+          applySortAndUpdateVariable();
+        }
+      }
+    );
     
     watch(
       () => props.content.dados,
@@ -204,7 +213,6 @@ export default {
             pinnedBottomRowData.value = [];
             rowData.value = [...newData];
           }
-          applySortAndUpdateVariable(); // Reaplica a ordenação e atualiza a variável sempre que os dados mudarem
         }
       },
       { immediate: true, deep: true }
