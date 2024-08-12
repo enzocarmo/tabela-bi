@@ -69,6 +69,15 @@ export default {
       section: "settings",
       defaultValue: false
     },
+    atualizardados: {
+      label: {
+        en: "Atualizar dados"
+      },
+      type: "Boolean",
+      bindable: true,
+      section: "settings",
+      defaultValue: false
+    },
     largura: {
       label: {
         en: "Largura da coluna"
