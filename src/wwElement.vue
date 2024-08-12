@@ -3,7 +3,7 @@
     @grid-ready="onGridReady" :rowDragManaged="true" @row-double-clicked="onRowDoubleClicked" :loading="content.overlay"
     :overlayLoadingTemplate="loading" :pinnedBottomRowData="pinnedBottomRowData"
     @body-scroll="onBodyScroll" @selection-changed="onSelectionChanged" :rowSelection="rowSelectionType"
-    :style="content.altura"></ag-grid-vue>
+    :style="content.altura" @sort-changed="onSortChanged"></ag-grid-vue>
 </template>
 
 <script>
@@ -62,11 +62,11 @@ export default {
         name: "Dados da Tabela",
         type: "array",
       });
-    
+
     function onGridReady(params) {
       gridApi.value = params.api;
       gridColumnApi.value = params.columnApi;
-      updateFilteredSortedData();
+      updateVariableResult4(); // Inicializa a variável com os dados atuais
     }
 
     function onRowDoubleClicked(event) {
@@ -97,6 +97,10 @@ export default {
       const selectedData = selectedNodes.map(node => node.data);
       setValue3(selectedData);
       emit("trigger-event", { name: "Selecionado", event: { value: "" } });
+    }
+
+    function onSortChanged() {
+      updateVariableResult4(); // Atualiza a variável quando a ordenação muda
     }
 
     function autoSizeAllColumns() {
@@ -173,14 +177,12 @@ export default {
       return cellDiv;
     }
 
-    function updateFilteredSortedData() {
-      if (gridApi.value) {
-        const filteredSortedData = [];
-        gridApi.value.forEachNodeAfterFilterAndSort(node => {
-          filteredSortedData.push(node.data);
-        });
-        setValue4(filteredSortedData);
-      }
+    function updateVariableResult4() {
+      const allRowData = [];
+      gridApi.value.forEachNodeAfterFilterAndSort((node) => {
+        allRowData.push(node.data);
+      });
+      setValue4(allRowData);
     }
     
     watch(
@@ -195,7 +197,7 @@ export default {
             pinnedBottomRowData.value = [];
             rowData.value = [...newData];
           }
-          updateFilteredSortedData();
+          updateVariableResult4(); // Atualiza a variável sempre que os dados mudarem
         }
       },
       { immediate: true, deep: true }
@@ -206,7 +208,6 @@ export default {
       (newColDefs) => {
         if (newColDefs) {
           colDefs.value = transformColumns(newColDefs);
-          updateFilteredSortedData();
         }
       },
       { immediate: true, deep: true }
@@ -271,10 +272,10 @@ export default {
       loading,
       onBodyScroll,
       onSelectionChanged,
+      onSortChanged,
       rowData,
       comparisonConfig,
-      rowSelectionType,
-      updateFilteredSortedData,
+      rowSelectionType
     };
   },
 };
