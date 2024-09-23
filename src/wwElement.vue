@@ -153,36 +153,43 @@ export default {
     }
 
     function comparisonRenderer(params) {
-      let icon = Minus;
-      let cellClass = "cell-nulo";
-      const data = params.data;
+  let icon = Minus;  // Icone padrão para valor nulo
+  let cellClass = "cell-nulo";  // Classe padrão para valor zero (nulo)
+  const data = params.data;
 
-      comparisonConfig.value.forEach((config) => {
-        if (params.colDef.field === config.secondCol) {
-          if (data[config.secondCol] > data[config.firstCol]) {
-            icon = TrendUp;
-            cellClass = "cell-positivo";
-          } else if (data[config.secondCol] < data[config.firstCol]) {
-            icon = TrendDown;
-            cellClass = "cell-negativo";
-          }
-        }
-      });
+  // Para cada configuração no comparisonConfig, verificar se a coluna é a mesma da coluna atual
+  comparisonConfig.value.forEach((config) => {
+    if (params.colDef.field === config.coluna) {
+      const cellValue = data[config.coluna];  // Obter valor da célula da coluna definida no config
 
-      const span = document.createElement("span");
-      span.className = cellClass;
-      span.textContent = params.valueFormatted || params.value;
-
-      const iconElement = document.createElement("img");
-      iconElement.src = icon;
-      iconElement.style.marginLeft = "12px";
-      iconElement.style.verticalAlign = "middle";
-
-      const cellDiv = document.createElement("div");
-      cellDiv.appendChild(span);
-      cellDiv.appendChild(iconElement);
-      return cellDiv;
+      // Definir classe e ícone com base no valor da célula
+      if (cellValue > 0) {
+        icon = TrendUp;
+        cellClass = "cell-positivo";
+      } else if (cellValue < 0) {
+        icon = TrendDown;
+        cellClass = "cell-negativo";
+      }
     }
+  });
+
+  // Criar os elementos HTML para a célula (texto e ícone)
+  const span = document.createElement("span");
+  span.className = cellClass;
+  span.textContent = params.valueFormatted || params.value;
+
+  const iconElement = document.createElement("img");
+  iconElement.src = icon;
+  iconElement.style.marginLeft = "12px";
+  iconElement.style.verticalAlign = "middle";
+
+  const cellDiv = document.createElement("div");
+  cellDiv.appendChild(span);
+  cellDiv.appendChild(iconElement);
+
+  return cellDiv;
+}
+
 
     function updateVariableResult4() {
       const allRowData = [];
@@ -424,11 +431,11 @@ export default {
 }
 
 .cell-positivo {
-  color: #38e25d;
+  color: #49a12c;
 }
 
 .cell-negativo {
-  color: #ff4a55;
+  color: #e02800;
 }
 
 .cell-nulo {
