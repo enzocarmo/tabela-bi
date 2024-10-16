@@ -1,9 +1,13 @@
 <template>
-  <ag-grid-vue ref="agGrid" :rowData="rowData" :columnDefs="colDefs" domLayout="normal" class="ag-theme-quartz"
+  <div>
+
+    <ag-grid-vue ref="agGrid" :rowData="rowData" :columnDefs="colDefs" domLayout="normal" class="ag-theme-quartz"
     @grid-ready="onGridReady" :rowDragManaged="true" @row-double-clicked="onRowDoubleClicked" :loading="content.overlay"
     :overlayLoadingTemplate="loading" :pinnedBottomRowData="pinnedBottomRowData"
     @body-scroll="onBodyScroll" @selection-changed="onSelectionChanged" :rowSelection="rowSelectionType"
     :style="content.altura" @sort-changed="onSortChanged"></ag-grid-vue>
+    
+  </div>
 </template>
 
 <script>
